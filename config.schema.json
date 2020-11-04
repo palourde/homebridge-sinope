@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "Sinope",
   "pluginType": "platform",
   "singular": true,
   "schema": {
