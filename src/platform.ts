@@ -2,6 +2,9 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { ExamplePlatformAccessory } from './platformAccessory';
+import { SinopePlatformConfig } from './config';
+import { NeviwebApi } from './neviweb';
+// import { NeviwebConfig } from './rest-client';
 
 /**
  * HomebridgePlatform
@@ -15,12 +18,19 @@ export class SinopePlatform implements DynamicPlatformPlugin {
   // this is used to track restored cached accessories
   public readonly accessories: PlatformAccessory[] = [];
 
+  public readonly neviweb: NeviwebApi;
+
   constructor(
     public readonly log: Logger,
-    public readonly config: PlatformConfig,
+    public readonly config: PlatformConfig & SinopePlatformConfig,
     public readonly api: API,
   ) {
     this.log.debug('Finished initializing platform:', this.config.name);
+
+    // let sinopeConfig: SinopePlatformConfig;
+    // const sinopeConfig = this.config;
+
+    this.neviweb = new NeviwebApi(this.config, log);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
     // Dynamic Platform plugins should only register new accessories after this event was fired,
@@ -33,7 +43,7 @@ export class SinopePlatform implements DynamicPlatformPlugin {
     });
 
     this.api.on('shutdown', () => {
-      log.debug('Logging out from Sinope');
+      this.shutdown();
     });
   }
 
@@ -53,7 +63,13 @@ export class SinopePlatform implements DynamicPlatformPlugin {
    * Accessories must only be registered once, previously created accessories
    * must not be registered again to prevent "duplicate UUID" errors.
    */
-  discoverDevices() {
+  async discoverDevices() {
+    const connected = await this.neviweb.login();
+    if (!connected) {
+      this.log.error('could not authenticate to the neviweb API');
+      return;
+    }
+    this.log.info('successfully authenticated to the neviweb API');
 
     // EXAMPLE ONLY
     // A real plugin you would discover accessories from the local network, cloud services
@@ -121,5 +137,14 @@ export class SinopePlatform implements DynamicPlatformPlugin {
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
     }
+  }
+
+  async shutdown() {
+    const loggedOut = await this.neviweb.logout();
+    if (!loggedOut) {
+      this.log.error('could not log out from the neviweb API');
+      return;
+    }
+    this.log.info('successfully logged out from the neviweb API');
   }
 }

@@ -5,11 +5,24 @@
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "url": {
+        "title": "URL",
+        "description": "URL of the Neviweb API",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "https://neviweb.com/api"
+      },
+      "username": {
+        "title": "Username",
+        "description": "Username on the Neviweb platform",
+        "type": "string",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password on the Neviweb platform",
+        "type": "string",
+        "required": true
       }
     }
   }
