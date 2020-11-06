@@ -1,7 +1,7 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { ExamplePlatformAccessory } from './platformAccessory';
+import { SinopeAccessory } from './platformAccessory';
 import { SinopePlatformConfig } from './config';
 import { NeviwebApi } from './neviweb';
 // import { NeviwebConfig } from './rest-client';
@@ -71,27 +71,22 @@ export class SinopePlatform implements DynamicPlatformPlugin {
     }
     this.log.info('successfully authenticated to the neviweb API');
 
-    // EXAMPLE ONLY
-    // A real plugin you would discover accessories from the local network, cloud services
-    // or a user-defined array in the platform config.
-    const exampleDevices = [
-      {
-        exampleUniqueId: 'ABCD',
-        exampleDisplayName: 'Bedroom',
-      },
-      {
-        exampleUniqueId: 'EFGH',
-        exampleDisplayName: 'Kitchen',
-      },
-    ];
+    const devices = await this.neviweb.fetchDevices();
+    this.log.debug('found the following devices: ' + JSON.stringify(devices));
+
+    // Gateways are now returned in the list of devices so we need to
+    // filter these out.
+    // TODO(palourde): There must be a more reliable way of doing this than
+    // looking at the parentDevice$id field
+    const thermostats = devices.filter(device => device.parentDevice$id !== null);
 
     // loop over the discovered devices and register each one if it has not already been registered
-    for (const device of exampleDevices) {
+    for (const thermostat of thermostats) {
 
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address
-      const uuid = this.api.hap.uuid.generate(device.exampleUniqueId);
+      const uuid = this.api.hap.uuid.generate(thermostat.identifier);
 
       // see if an accessory with the same uuid has already been registered and restored from
       // the cached devices we stored in the `configureAccessory` method above
@@ -99,7 +94,7 @@ export class SinopePlatform implements DynamicPlatformPlugin {
 
       if (existingAccessory) {
         // the accessory already exists
-        if (device) {
+        if (thermostat) {
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
           // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
@@ -108,11 +103,11 @@ export class SinopePlatform implements DynamicPlatformPlugin {
 
           // create the accessory handler for the restored accessory
           // this is imported from `platformAccessory.ts`
-          new ExamplePlatformAccessory(this, existingAccessory);
+          new SinopeAccessory(this, existingAccessory, thermostat);
           
           // update accessory cache with any changes to the accessory details and information
           this.api.updatePlatformAccessories([existingAccessory]);
-        } else if (!device) {
+        } else if (!thermostat) {
           // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
           // remove platform accessories when no longer present
           this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
@@ -120,18 +115,18 @@ export class SinopePlatform implements DynamicPlatformPlugin {
         }
       } else {
         // the accessory does not yet exist, so we need to create it
-        this.log.info('Adding new accessory:', device.exampleDisplayName);
+        this.log.info('Adding new accessory:', thermostat.name);
 
         // create a new accessory
-        const accessory = new this.api.platformAccessory(device.exampleDisplayName, uuid);
+        const accessory = new this.api.platformAccessory(thermostat.name, uuid);
 
         // store a copy of the device object in the `accessory.context`
         // the `context` property can be used to store any data about the accessory you may need
-        accessory.context.device = device;
+        accessory.context.device = thermostat;
 
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
-        new ExamplePlatformAccessory(this, accessory);
+        new SinopeAccessory(this, accessory, thermostat);
 
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);

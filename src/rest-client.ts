@@ -87,4 +87,29 @@ export class NeviwebRestClient {
 
     return false;
   }
+
+  async request<T = void>(options: AxiosRequestConfig & { url: string }): Promise<T> {
+    this.log.debug(options.url);
+
+    // TODO(palourde): Verify that the access token is still valid with this.iat and optionally refresh it with this.refresh
+    if (!options.headers) {
+      options.headers = {};
+    }
+    options.headers['session-id'] = this.access;
+
+    try {
+      const response = await axios(options);
+      if (response.data.error) {
+        throw response.data;
+      }
+
+      const data = response.data as T;
+      return data;
+
+      // return true;
+    } catch(error) {
+      this.log.debug('unexpected error during request: ' + JSON.stringify(error));
+      throw error;
+    }
+  }
 }
