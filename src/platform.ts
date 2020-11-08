@@ -2,6 +2,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { SinopeAccessory } from './platformAccessory';
+import { SinopeDevice } from './types';
 import { SinopePlatformConfig } from './config';
 import { NeviwebApi } from './neviweb';
 // import { NeviwebConfig } from './rest-client';
@@ -36,10 +37,10 @@ export class SinopePlatform implements DynamicPlatformPlugin {
     // Dynamic Platform plugins should only register new accessories after this event was fired,
     // in order to ensure they weren't added to homebridge already. This event can also be used
     // to start discovery of new accessories.
-    this.api.on('didFinishLaunching', () => {
+    this.api.on('didFinishLaunching', async () => {
       log.debug('Executed didFinishLaunching callback');
       // run the method to discover / register your devices as accessories
-      this.discoverDevices();
+      await this.discoverDevices();
     });
 
     this.api.on('shutdown', () => {
@@ -132,7 +133,33 @@ export class SinopePlatform implements DynamicPlatformPlugin {
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
     }
+
+    // this.updateDevices(thermostats);
   }
+
+  // private async updateDevices(devices: SinopeDevice[]) {
+  //   for (const device of devices) {
+  //     // const uuid = this.api.hap.uuid.generate(device.UUID);
+  //     // this.accessories.get();
+  //     this.log.debug('device = ' + JSON.stringify(device));
+
+  //     const uuid = this.api.hap.uuid.generate(device.identifier);
+  //     const accessory = this.accessories.find(accessory => accessory.UUID === uuid);
+      
+  //     if (accessory) {
+  //       const state = this.neviweb.fetchDevice(device.id);
+  //       this.log.debug(JSON.stringify(state));
+  //       accessory.context.device.update(state);
+  //       // accessory.
+  //     } else {
+  //       this.log.error('could not find Homebridge devic with UUID (%s) for Sinope device (%s)', uuid, device.name);
+  //     }
+
+      
+  //     // accessory.updateAccessory(state);
+  //     // accessory.
+  //   }
+  // }
 
   async shutdown() {
     const loggedOut = await this.neviweb.logout();

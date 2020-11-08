@@ -1,7 +1,10 @@
 import { Service, PlatformAccessory, CharacteristicValue, CharacteristicSetCallback, CharacteristicGetCallback } from 'homebridge';
 
-import { SinopeDevice } from './types';
+import { SinopeDevice, SinopeDeviceState } from './types';
 import { SinopePlatform } from './platform';
+
+// Neviweb API polling interval, in seconds
+const POLLING_INTERVAL = 10;
 
 /**
  * Platform Accessory
@@ -15,9 +18,11 @@ export class SinopeAccessory {
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
    */
-  private exampleStates = {
-    On: false,
-    Brightness: 100,
+  private state = {
+    CurrentTemperature: 0,
+    TargetTemperature: 0,
+    CurrentHeatingCoolingState: 0,
+    TargetHeatingCoolingState: 0,
   };
 
   constructor(
@@ -58,6 +63,11 @@ export class SinopeAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.TemperatureDisplayUnits)
       .on('get', this.handleTemperatureDisplayUnitsGet.bind(this))
       .on('set', this.handleTemperatureDisplayUnitsSet.bind(this));
+
+    this.updateState();
+    setInterval(() => {
+      this.updateState();
+    }, POLLING_INTERVAL * 1000);
   }
 
   /**
@@ -66,10 +76,10 @@ export class SinopeAccessory {
   handleCurrentHeatingCoolingStateGet(callback: CharacteristicGetCallback) {
     this.platform.log.debug('Triggered GET CurrentHeatingCoolingState');
 
-    // set this to a valid value for CurrentHeatingCoolingState
-    const currentValue = 1;
+    // HEAT = 1
+    // const currentValue = 1;
 
-    callback(null, currentValue);
+    callback(null, this.state.CurrentHeatingCoolingState);
   }
 
 
@@ -79,10 +89,10 @@ export class SinopeAccessory {
   handleTargetHeatingCoolingStateGet(callback: CharacteristicGetCallback) {
     this.platform.log.debug('Triggered GET TargetHeatingCoolingState');
 
-    // set this to a valid value for TargetHeatingCoolingState
-    const currentValue = 1;
+    // HEAT = 1
+    // const currentValue = 1;
 
-    callback(null, currentValue);
+    callback(null, this.state.TargetHeatingCoolingState);
   }
 
   /**
@@ -101,9 +111,9 @@ export class SinopeAccessory {
     this.platform.log.debug('Triggered GET CurrentTemperature');
 
     // set this to a valid value for CurrentTemperature
-    const currentValue = 1;
+    // const currentValue = 1;
 
-    callback(null, currentValue);
+    callback(null, this.state.CurrentTemperature);
   }
 
 
@@ -114,9 +124,9 @@ export class SinopeAccessory {
     this.platform.log.debug('Triggered GET TargetTemperature');
 
     // set this to a valid value for TargetTemperature
-    const currentValue = 1;
+    // const currentValue = 1;
 
-    callback(null, currentValue);
+    callback(null, this.state.TargetTemperature);
   }
 
   /**
@@ -149,4 +159,48 @@ export class SinopeAccessory {
     callback(null);
   }
 
+  async updateState() {
+    let state: SinopeDeviceState;
+    try {
+      state = await this.platform.neviweb.fetchDevice(this.device.id);
+      this.platform.log.debug('fetched update for device %s from Neviweb API: %s', this.device.name, JSON.stringify(state));
+
+      this.state.CurrentTemperature = state.roomTemperature.value;
+      this.service.updateCharacteristic(
+        this.platform.Characteristic.CurrentTemperature,
+        state.roomTemperature.value,
+      );
+
+      this.state.TargetTemperature = state.roomSetpoint;
+      this.service.updateCharacteristic(
+        this.platform.Characteristic.TargetTemperature,
+        state.roomSetpoint,
+      );
+
+      if (state.outputPercentDisplay > 0) {
+        this.state.CurrentHeatingCoolingState = 1;
+      } else {
+        this.state.CurrentHeatingCoolingState = 0;
+      }
+      this.service.updateCharacteristic(
+        this.platform.Characteristic.CurrentHeatingCoolingState,
+        this.state.CurrentHeatingCoolingState,
+      );
+
+      // if (state.setpointMode === 'auto') {
+      //   this.state.TargetHeatingCoolingState = 3;
+      // } else {
+      //   this.state.TargetHeatingCoolingState = 1;
+      // }
+      this.state.TargetHeatingCoolingState = 1;
+      this.service.updateCharacteristic(
+        this.platform.Characteristic.TargetHeatingCoolingState,
+        this.state.TargetHeatingCoolingState,
+      );
+
+
+    } catch(error) {
+      this.platform.log.error('could not fetch update for device %s from Neviweb API', this.device.name);
+    }
+  }
 }

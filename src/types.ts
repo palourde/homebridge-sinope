@@ -6,3 +6,14 @@ export interface SinopeDevice {
   sku: string;
   vendor: string;
 }
+
+export interface SinopeDeviceState {
+  roomTemperature: RootTemperature;
+  roomSetpoint: number;
+  outputPercentDisplay: number;
+  setpointMode: string;
+}
+
+export interface RootTemperature {
+  value: number;
+}

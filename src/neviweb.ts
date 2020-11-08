@@ -1,7 +1,7 @@
 import { Logger } from 'homebridge';
 import { NeviwebRestClient } from './rest-client';
 import { SinopePlatformConfig } from './config';
-import { SinopeDevice } from './types';
+import { SinopeDevice, SinopeDeviceState } from './types';
 
 export class NeviwebApi {
   private readonly restClient = new NeviwebRestClient(this.config, this.log);
@@ -19,11 +19,17 @@ export class NeviwebApi {
     return this.restClient.logout();
   }
 
-  // async fetchLocations() {}
-
   async fetchDevices() {
     return this.restClient.request<SinopeDevice[]>({
       url: this.config.url + '/devices',
+      method: 'GET',
+    });
+  }
+
+  async fetchDevice(id: number) {
+    return this.restClient.request<SinopeDeviceState>({
+      url: this.config.url + '/device/' + id +
+        '/attribute?attributes=roomTemperature,outputPercentDisplay,setpointMode,alarmsActive0,roomSetpoint',
       method: 'GET',
     });
   }

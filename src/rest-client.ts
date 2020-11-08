@@ -9,6 +9,7 @@ export class NeviwebRestClient {
   private access = '';
   private iat = 0;
   private refresh = '';
+  private connected = false;
 
   constructor(
     private readonly config: SinopePlatformConfig,
@@ -38,6 +39,7 @@ export class NeviwebRestClient {
       this.access = response.data.session;
       this.iat = response.data.iat;
       this.refresh = response.data.refreshToken;
+      this.connected = true;
       return true;
     } catch(error) {
       if (error.code) {
@@ -80,6 +82,7 @@ export class NeviwebRestClient {
         throw response.data;
       }
 
+      this.connected = false;
       return true;
     } catch(error) {
       this.log.debug('unexpected error while logging out: ' + JSON.stringify(error));
@@ -89,7 +92,11 @@ export class NeviwebRestClient {
   }
 
   async request<T = void>(options: AxiosRequestConfig & { url: string }): Promise<T> {
-    this.log.debug(options.url);
+    this.log.debug('requesting ' + options.url);
+
+    if (!this.connected) {
+      this.log.warn('no longer connected to the Neviweb API, ignoring the request');
+    }
 
     // TODO(palourde): Verify that the access token is still valid with this.iat and optionally refresh it with this.refresh
     if (!options.headers) {
@@ -99,6 +106,8 @@ export class NeviwebRestClient {
 
     try {
       const response = await axios(options);
+      this.log.debug('received ' + JSON.stringify(response.data));
+
       if (response.data.error) {
         throw response.data;
       }
