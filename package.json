@@ -27,6 +27,7 @@
     "homebridge-plugin"
   ],
   "dependencies": {
+    "async-lock": "^1.2.4",
     "axios": "^0.21.0"
   },
   "devDependencies": {
