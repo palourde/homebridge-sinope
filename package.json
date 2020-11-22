@@ -1,5 +1,5 @@
 {
-  "private": true,
+  "private": false,
   "displayName": "Sinope plugin for HomeBridge",
   "name": "homebridge-sinope",
   "version": "0.0.1",
