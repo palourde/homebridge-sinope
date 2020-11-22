@@ -1,5 +1,5 @@
 import { Service, PlatformAccessory, CharacteristicValue, CharacteristicSetCallback, CharacteristicGetCallback } from 'homebridge';
-import { SinopeDevice, SinopeDeviceState } from './types';
+import { SinopeDevice, SinopeDeviceState, SinopeDeviceStateRequest } from './types';
 import { SinopePlatform } from './platform';
 import AsyncLock from 'async-lock';
 
@@ -63,9 +63,6 @@ export class SinopeAccessory {
       .on('set', this.handleTemperatureDisplayUnitsSet.bind(this));
 
     this.updateState();
-    // setInterval(() => {
-    //   this.updateState();
-    // }, POLLING_INTERVAL * 1000);
   }
 
   /**
@@ -92,8 +89,32 @@ export class SinopeAccessory {
   /**
    * Handle requests to set the "Target Heating Cooling State" characteristic
    */
-  handleTargetHeatingCoolingStateSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+  async handleTargetHeatingCoolingStateSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('Triggered SET TargetHeatingCoolingState:' + value);
+
+    const state = await this.getState();
+    const mode = Number(value);
+    let setpointMode = '';
+
+    if (mode === 0) {
+      setpointMode = 'off';
+    } else if (mode !== 0 && state.targetHeatingCoolingState === 0) {
+      // Only set setpointMode to 'auto' if the target state was 0 (off),
+      // because Neviweb sets the mode to 'autoBypass' automatically when the
+      // temperature is manually modified, but the API does not accept this last value
+      setpointMode = 'auto';
+    } else {
+      callback(null);
+      return;
+    }
+
+    const body: SinopeDeviceStateRequest = {setpointMode: setpointMode};
+    try {
+      await this.platform.neviweb.updateDevice(this.device.id, body);
+      this.platform.log.debug('updated device %s with TargetTemperature %d', this.device.name, value);
+    } catch(error) {
+      this.platform.log.error('could not update TargetTemperature of device %s', this.device.name);
+    }
 
     callback(null);
   }
@@ -122,8 +143,16 @@ export class SinopeAccessory {
   /**
    * Handle requests to set the "Target Temperature" characteristic
    */
-  handleTargetTemperatureSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+  async handleTargetTemperatureSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('Triggered SET TargetTemperature:' + value);
+
+    const body: SinopeDeviceStateRequest = {roomSetpoint: Number(value)};
+    try {
+      await this.platform.neviweb.updateDevice(this.device.id, body);
+      this.platform.log.debug('updated device %s with TargetTemperature %d', this.device.name, value);
+    } catch(error) {
+      this.platform.log.error('could not update TargetTemperature of device %s', this.device.name);
+    }
 
     callback(null);
   }
@@ -188,11 +217,23 @@ export class SinopeAccessory {
         this.state.currentHeatingCoolingState,
       );
 
-      this.state.targetHeatingCoolingState = 1;
+      if (deviceState.setpointMode === 'auto') {
+        this.state.targetHeatingCoolingState = 3;
+      } else if (deviceState.setpointMode === 'off') {
+        this.state.targetHeatingCoolingState = 0;
+      } else {
+        this.state.targetHeatingCoolingState = 1;
+      }
       this.service.updateCharacteristic(
         this.platform.Characteristic.TargetHeatingCoolingState,
         this.state.targetHeatingCoolingState,
       );
+
+      // this.state.targetHeatingCoolingState = 1;
+      // this.service.updateCharacteristic(
+      //   this.platform.Characteristic.TargetHeatingCoolingState,
+      //   this.state.targetHeatingCoolingState,
+      // );
     } catch(error) {
       this.platform.log.error('could not fetch update for device %s from Neviweb API', this.device.name);
     }

@@ -14,6 +14,11 @@ export interface SinopeDeviceState {
   setpointMode: string;
 }
 
+export interface SinopeDeviceStateRequest {
+  roomSetpoint?: number;
+  setpointMode?: string;
+}
+
 export interface RootTemperature {
   value: number;
 }
