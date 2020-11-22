@@ -12,9 +12,26 @@ This [Homebridge](https://homebridge.io/) plugin provides a platform for [Sinop√
 
 ## Installation
 
+Install the plugin:
+```
+sudo npm install -g homebridge-sinope
+```
 
 ## Configuration
 
+Add the `Sinope` platform in your Homebridge `config.json` file, by replacing the username and password with your Neviweb credentials:
+```
+{
+  "platforms": [
+    {
+      "platform": "Sinope",
+      "username": "username@email.com",
+      "password": "P@ssw0rd!",
+      "url": "https://neviweb.com/api"
+    }
+  ]
+}
+```
 
 ## Development
 
