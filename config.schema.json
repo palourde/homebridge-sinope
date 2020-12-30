@@ -26,9 +26,10 @@
       },
       "locationid": {
         "title": "Location ID",
-        "description": "Location ID shown on neviweb website locations/number",
+        "description": "Optional Location ID shown on neviweb website locations/number",
         "type": "string",
-        "required": true
+        "required": true,
+        "default": ""
       }
     }
   }

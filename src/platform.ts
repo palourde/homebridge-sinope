@@ -1,7 +1,7 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { SinopeThermostatAccessory, SinopeSwitchAccessory } from './platformAccessory';
+import { SinopeThermostatAccessory, SinopeSwitchAccessory, SinopeDimmerAccessory } from './platformAccessory';
 // import { SinopeDevice } from './types';
 import { SinopePlatformConfig } from './config';
 import { NeviwebApi } from './neviweb';
@@ -79,12 +79,10 @@ export class SinopePlatform implements DynamicPlatformPlugin {
     // filter these out.
     // TODO(palourde): There must be a more reliable way of doing this than
     // looking at the parentDevice$id field
-    // const thermostats = devices.filter(device => device.parentDevice$id !== null);
     const thermostats = devices.filter(device => device.sku.substring(0,2) == "TH");
-    const loadcontrollers = devices.filter(device => device.sku.substring(0,2) == "RM");
     const dimmers = devices.filter(device => device.sku.substring(0,2) == "DM");
-    const switches = devices.filter(device => device.sku.substring(0,2) == "SW");
-    const plugs = devices.filter(device => device.sku.substring(0,2) == "SP");
+    const switchesregex = new RegExp("^SW|^SP|^RM", 'g');
+    const switches = devices.filter(device => { return device.sku.match(switchesregex) } );
 
     // loop over the discovered devices and register each one if it has not already been registered
     for (const thermostat of thermostats) {
@@ -140,7 +138,7 @@ export class SinopePlatform implements DynamicPlatformPlugin {
     }
 
 //---
-    for (const aswitch of plugs) {
+    for (const aswitch of switches) {
 
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
@@ -186,6 +184,60 @@ export class SinopePlatform implements DynamicPlatformPlugin {
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
         new SinopeSwitchAccessory(this, accessory, aswitch);
+
+        // link the accessory to your platform
+        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      }
+    }
+//---
+
+//---
+    for (const dimmer of dimmers) {
+
+      // generate a unique id for the accessory this should be generated from
+      // something globally unique, but constant, for example, the device serial
+      // number or MAC address
+      const uuid = this.api.hap.uuid.generate(dimmer.identifier);
+
+      // see if an accessory with the same uuid has already been registered and restored from
+      // the cached devices we stored in the `configureAccessory` method above
+      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+
+      if (existingAccessory) {
+        // the accessory already exists
+        if (dimmer) {
+          this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+
+          // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
+          // existingAccessory.context.device = device;
+          // this.api.updatePlatformAccessories([existingAccessory]);
+
+          // create the accessory handler for the restored accessory
+          // this is imported from `platformAccessory.ts`
+          new SinopeSwitchAccessory(this, existingAccessory, dimmer);
+          
+          // update accessory cache with any changes to the accessory details and information
+          this.api.updatePlatformAccessories([existingAccessory]);
+        } else if (!dimmer) {
+          // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
+          // remove platform accessories when no longer present
+          this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
+          this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
+        }
+      } else {
+        // the accessory does not yet exist, so we need to create it
+        this.log.info('Adding new accessory:', dimmer.name);
+
+        // create a new accessory
+        const accessory = new this.api.platformAccessory(dimmer.name, uuid);
+
+        // store a copy of the device object in the `accessory.context`
+        // the `context` property can be used to store any data about the accessory you may need
+        accessory.context.device = dimmer;
+
+        // create the accessory handler for the newly create accessory
+        // this is imported from `platformAccessory.ts`
+        new SinopeDimmerAccessory(this, accessory, dimmer);
 
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);

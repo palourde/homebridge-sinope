@@ -1,7 +1,7 @@
 import { Logger } from 'homebridge';
 import { NeviwebRestClient } from './rest-client';
 import { SinopePlatformConfig } from './config';
-import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest } from './types';
+import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest, SinopeDimmerState, SinopeDimmerStateRequest } from './types';
 
 export class NeviwebApi {
   private readonly restClient = new NeviwebRestClient(this.config, this.log);
@@ -21,7 +21,8 @@ export class NeviwebApi {
 
   async fetchDevices() {
     return this.restClient.request<SinopeDevice[]>({
-      url: this.config.url + '/devices?location$id=' + this.config.locationid,
+      //url: this.config.url + '/devices' + '?location$id=' + this.config.locationid,
+      url: this.config.url + '/devices' + ((this.config.locationid !== undefined) ? '?location$id=' + this.config.locationid : ''),
       method: 'GET',
     });
   }
@@ -42,6 +43,14 @@ export class NeviwebApi {
     });
   }
 
+  async fetchDimmer(id: number) {
+    return this.restClient.request<SinopeDimmerState>({
+      url: this.config.url + '/device/' + id +
+        '/attribute?attributes=onOff,intensity',
+      method: 'GET',
+    });
+  }
+
   async updateThermostat(id: number, data: SinopeThermostatStateRequest) {
     return this.restClient.request<SinopeThermostatState>({
       url: this.config.url + '/device/' + id + '/attribute',
@@ -52,6 +61,14 @@ export class NeviwebApi {
 
   async updateSwitch(id: number, data: SinopeSwitchStateRequest) {
     return this.restClient.request<SinopeSwitchState>({
+      url: this.config.url + '/device/' + id + '/attribute',
+      method: 'PUT',
+      data: data,
+    });
+  }
+
+  async updateDimmer(id: number, data: SinopeDimmerStateRequest) {
+    return this.restClient.request<SinopeDimmerState>({
       url: this.config.url + '/device/' + id + '/attribute',
       method: 'PUT',
       data: data,

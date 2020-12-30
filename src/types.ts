@@ -19,6 +19,11 @@ export interface SinopeSwitchState {
   onOff: string;
 }
 
+export interface SinopeDimmerState {
+  onOff: string;
+  intensity: number;
+}
+
 export interface SinopeThermostatStateRequest {
   roomSetpoint?: number;
   setpointMode?: string;
@@ -26,6 +31,11 @@ export interface SinopeThermostatStateRequest {
 
 export interface SinopeSwitchStateRequest {
   onOff?: string;
+}
+
+export interface SinopeDimmerStateRequest {
+  onOff?: string;
+  intensity?: number;
 }
 
 export interface RootTemperature {
