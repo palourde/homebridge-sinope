@@ -1,7 +1,7 @@
 import { Logger } from 'homebridge';
 import { NeviwebRestClient } from './rest-client';
 import { SinopePlatformConfig } from './config';
-import { SinopeDevice, SinopeDeviceState, SinopeDeviceStateRequest } from './types';
+import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest } from './types';
 
 export class NeviwebApi {
   private readonly restClient = new NeviwebRestClient(this.config, this.log);
@@ -21,21 +21,37 @@ export class NeviwebApi {
 
   async fetchDevices() {
     return this.restClient.request<SinopeDevice[]>({
-      url: this.config.url + '/devices',
+      url: this.config.url + '/devices?location$id=' + this.config.locationid,
       method: 'GET',
     });
   }
 
-  async fetchDevice(id: number) {
-    return this.restClient.request<SinopeDeviceState>({
+  async fetchThermostat(id: number) {
+    return this.restClient.request<SinopeThermostatState>({
       url: this.config.url + '/device/' + id +
         '/attribute?attributes=roomTemperature,outputPercentDisplay,setpointMode,alarmsActive0,roomSetpoint',
       method: 'GET',
     });
   }
 
-  async updateDevice(id: number, data: SinopeDeviceStateRequest) {
-    return this.restClient.request<SinopeDeviceState>({
+  async fetchSwitch(id: number) {
+    return this.restClient.request<SinopeSwitchState>({
+      url: this.config.url + '/device/' + id +
+        '/attribute?attributes=onOff',
+      method: 'GET',
+    });
+  }
+
+  async updateThermostat(id: number, data: SinopeThermostatStateRequest) {
+    return this.restClient.request<SinopeThermostatState>({
+      url: this.config.url + '/device/' + id + '/attribute',
+      method: 'PUT',
+      data: data,
+    });
+  }
+
+  async updateSwitch(id: number, data: SinopeSwitchStateRequest) {
+    return this.restClient.request<SinopeSwitchState>({
       url: this.config.url + '/device/' + id + '/attribute',
       method: 'PUT',
       data: data,

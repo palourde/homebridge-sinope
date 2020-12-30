@@ -23,6 +23,12 @@
         "description": "Password on the Neviweb platform",
         "type": "string",
         "required": true
+      },
+      "locationid": {
+        "title": "Location ID",
+        "description": "Location ID shown on neviweb website locations/number",
+        "type": "string",
+        "required": true
       }
     }
   }
