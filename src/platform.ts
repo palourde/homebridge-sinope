@@ -214,7 +214,7 @@ export class SinopePlatform implements DynamicPlatformPlugin {
 
           // create the accessory handler for the restored accessory
           // this is imported from `platformAccessory.ts`
-          new SinopeSwitchAccessory(this, existingAccessory, dimmer);
+          new SinopeDimmerAccessory(this, existingAccessory, dimmer);
           
           // update accessory cache with any changes to the accessory details and information
           this.api.updatePlatformAccessories([existingAccessory]);
