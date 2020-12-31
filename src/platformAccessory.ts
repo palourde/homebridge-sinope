@@ -295,19 +295,19 @@ export class SinopeSwitchAccessory {
   }
 
   /**
-   * Handle requests to get the current value of the "onOff" characteristic
+   * Handle requests to get the current value of the "On" characteristic
    */
   async handleOnGet(callback: CharacteristicGetCallback) {
-    this.platform.log.debug('Triggered GET onOffState');
+    this.platform.log.debug('Triggered GET On');
     const state = await this.getState();
     callback(null, state.onOff);
   }
 
   /**
-   * Handle requests to set the "onOff" characteristic
+   * Handle requests to set the "On" characteristic
    */
   async handleOnSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-    this.platform.log.debug('Triggered SET onOff:' + value);
+    this.platform.log.debug('Triggered SET On:' + value);
 
     const state = await this.getState();
     const on = Number(value);
@@ -325,9 +325,9 @@ export class SinopeSwitchAccessory {
     const body: SinopeSwitchStateRequest = {onOff: onOff};
     try {
       await this.platform.neviweb.updateSwitch(this.device.id, body);
-      this.platform.log.debug('updated device %s with OnOff %d', this.device.name, value);
+      this.platform.log.debug('updated device %s with On %d', this.device.name, value);
     } catch(error) {
-      this.platform.log.error('could not update OnOff of device %s', this.device.name);
+      this.platform.log.error('could not update On of device %s', this.device.name);
     }
 
     callback(null);
@@ -443,9 +443,9 @@ export class SinopeDimmerAccessory {
     const body: SinopeSwitchStateRequest = {onOff: onOff};
     try {
       await this.platform.neviweb.updateSwitch(this.device.id, body);
-      this.platform.log.debug('updated device %s with OnOff %d', this.device.name, value);
+      this.platform.log.debug('updated device %s with On %d', this.device.name, value);
     } catch(error) {
-      this.platform.log.error('could not update OnOff of device %s', this.device.name);
+      this.platform.log.error('could not update On of device %s', this.device.name);
     }
 
     callback(null);
