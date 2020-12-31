@@ -1,5 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue, CharacteristicSetCallback, CharacteristicGetCallback } from 'homebridge';
-import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest, SinopeDimmerState, SinopeDimmerStateRequest } from './types';
+import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, 
+  SinopeSwitchStateRequest, SinopeDimmerState, SinopeDimmerStateRequest } from './types';
 import { SinopePlatform } from './platform';
 import AsyncLock from 'async-lock';
 
@@ -309,11 +310,12 @@ export class SinopeSwitchAccessory {
   async handleOnSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('Triggered SET On:' + value);
 
-    const state = await this.getState();
+    // not needed
+    // const state = await this.getState();
     const on = Number(value);
     let onOff = '';
 
-    if (on  === 0) {
+    if (on === 0) {
       onOff = 'off';
     } else if (on !== 0) {
       onOff = 'on';
@@ -427,11 +429,12 @@ export class SinopeDimmerAccessory {
   async handleOnSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('Triggered SET On:' + value);
 
-    const state = await this.getState();
+    //not needed
+    //const state = await this.getState();
     const on = Number(value);
     let onOff = '';
 
-    if (on  === 0) {
+    if (on === 0) {
       onOff = 'off';
     } else if (on !== 0) {
       onOff = 'on';

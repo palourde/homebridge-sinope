@@ -79,10 +79,12 @@ export class SinopePlatform implements DynamicPlatformPlugin {
     // filter these out.
     // TODO(palourde): There must be a more reliable way of doing this than
     // looking at the parentDevice$id field
-    const thermostats = devices.filter(device => device.sku.substring(0,2) == "TH");
-    const dimmers = devices.filter(device => device.sku.substring(0,2) == "DM");
-    const switchesregex = new RegExp("^SW|^SP|^RM", 'g');
-    const switches = devices.filter(device => { return device.sku.match(switchesregex) } );
+    const thermostats = devices.filter(device => device.sku.substring(0, 2) === 'TH');
+    const dimmers = devices.filter(device => device.sku.substring(0, 2) === 'DM');
+    const switchesregex = new RegExp('^SW|^SP|^RM', 'g');
+    const switches = devices.filter(device => { 
+      return device.sku.match(switchesregex); 
+    } );
 
     // loop over the discovered devices and register each one if it has not already been registered
     for (const thermostat of thermostats) {
@@ -137,7 +139,6 @@ export class SinopePlatform implements DynamicPlatformPlugin {
       }
     }
 
-//---
     for (const aswitch of switches) {
 
       // generate a unique id for the accessory this should be generated from
@@ -189,9 +190,7 @@ export class SinopePlatform implements DynamicPlatformPlugin {
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
     }
-//---
 
-//---
     for (const dimmer of dimmers) {
 
       // generate a unique id for the accessory this should be generated from
@@ -243,7 +242,6 @@ export class SinopePlatform implements DynamicPlatformPlugin {
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
     }
-//---
 
     // this.updateDevices(thermostats);
   }

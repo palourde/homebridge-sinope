@@ -1,7 +1,8 @@
 import { Logger } from 'homebridge';
 import { NeviwebRestClient } from './rest-client';
 import { SinopePlatformConfig } from './config';
-import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest, SinopeDimmerState, SinopeDimmerStateRequest } from './types';
+import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest, 
+  SinopeDimmerState, SinopeDimmerStateRequest } from './types';
 
 export class NeviwebApi {
   private readonly restClient = new NeviwebRestClient(this.config, this.log);
