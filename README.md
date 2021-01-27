@@ -8,7 +8,15 @@
 
 # Homebridge Sinope
 
-This [Homebridge](https://homebridge.io/) plugin provides a platform for [Sinopé Thermostats](https://www.sinopetech.com/).
+This [Homebridge](https://homebridge.io/) plugin provides a platform for [Sinopé Thermostats and Accessories](https://www.sinopetech.com/).
+
+## Supported Devices
+
+TH Series Thermostats
+DM Series Dimmers
+SW Series Switches
+SP Series Outlet
+RM Series Load Controllers
 
 ## Installation
 

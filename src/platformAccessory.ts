@@ -353,7 +353,7 @@ export class SinopeSwitchAccessory {
       deviceState = await this.platform.neviweb.fetchSwitch(this.device.id);
       this.platform.log.debug('fetched update for device %s from Neviweb API: %s', this.device.name, JSON.stringify(deviceState));
 
-      this.state.validUntil = this.currentEpoch() + 10;
+      this.state.validUntil = this.currentEpoch() + 1;
 
       if (deviceState.onOff === 'on') {
         this.state.onOff = 1;
@@ -499,7 +499,7 @@ export class SinopeDimmerAccessory {
       deviceState = await this.platform.neviweb.fetchDimmer(this.device.id);
       this.platform.log.debug('fetched update for device %s from Neviweb API: %s', this.device.name, JSON.stringify(deviceState));
 
-      this.state.validUntil = this.currentEpoch() + 10;
+      this.state.validUntil = this.currentEpoch() + 1;
 
       if (deviceState.onOff === 'on') {
         this.state.onOff = 1;
