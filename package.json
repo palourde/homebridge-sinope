@@ -1,6 +1,6 @@
 {
   "private": false,
-  "displayName": "HomeBridge Sinope",
+  "displayName": "Homebridge Sinope",
   "name": "homebridge-sinope",
   "version": "0.0.2",
   "description": "Unofficial API for Sinope thermostats",
