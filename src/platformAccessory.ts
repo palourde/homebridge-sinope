@@ -77,6 +77,10 @@ export class SinopeThermostatAccessory {
       .on('set', this.handleTemperatureDisplayUnitsSet.bind(this));
 
     this.updateState();
+
+    setInterval(() => {
+       this.updateState();
+    }, 360 * 1000);
   }
 
   /**
@@ -293,6 +297,10 @@ export class SinopeSwitchAccessory {
       .on('set', this.handleOnSet.bind(this));
 
     this.updateState();
+
+    setInterval(() => {
+       this.updateState();
+    }, 360 * 1000);
   }
 
   /**
@@ -412,6 +420,10 @@ export class SinopeDimmerAccessory {
       .on('set', this.handleBrightnessSet.bind(this));
 
     this.updateState();
+
+    setInterval(() => {
+       this.updateState();
+    }, 360 * 1000);
   }
 
   /**
