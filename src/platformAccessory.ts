@@ -484,6 +484,8 @@ export class SinopeDimmerAccessory {
     const body: SinopeDimmerStateRequest = {intensity: Number(value)};
     try {
       await this.platform.neviweb.updateDimmer(this.device.id, body);
+      //try twice !
+      await this.platform.neviweb.updateDimmer(this.device.id, body);
       this.platform.log.debug('updated device %s with Brightness %d', this.device.name, value);
     } catch(error) {
       this.platform.log.error('could not update Brightness of device %s', this.device.name);

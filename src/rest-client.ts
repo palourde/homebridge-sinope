@@ -148,11 +148,11 @@ export class NeviwebRestClient {
 
     if (!this.connected) {
       this.log.warn('no longer connected to the Neviweb API, ignoring this request');
-      //await this.lock.acquire(CLIENT_KEY, async () => {
-      //  await this.logout();
-      //  await this.login();
-      //});
-      throw new Error('expired session');
+      await this.lock.acquire(CLIENT_KEY, async () => {
+        await this.logout();
+        await this.login();
+      });
+      //throw new Error('expired session');
     }
 
     // Require the lock to be acquired when determining whether the session is still valid, and optionally renewing it

@@ -3,9 +3,14 @@ import { NeviwebRestClient } from './rest-client';
 import { SinopePlatformConfig } from './config';
 import { SinopeDevice, SinopeThermostatState, SinopeThermostatStateRequest, SinopeSwitchState, SinopeSwitchStateRequest, 
   SinopeDimmerState, SinopeDimmerStateRequest } from './types';
+import Queue from 'async-await-queue';
+
+const myPriority = -1;
 
 export class NeviwebApi {
   private readonly restClient = new NeviwebRestClient(this.config, this.log);
+  private myq = new Queue(1, 120);
+
 
   constructor(
     private readonly config: SinopePlatformConfig,
@@ -61,18 +66,26 @@ export class NeviwebApi {
   }
 
   async updateSwitch(id: number, data: SinopeSwitchStateRequest) {
-    return this.restClient.request<SinopeSwitchState>({
+    const me = Symbol();
+    await this.myq.wait(me, myPriority);
+    const reqresult =  this.restClient.request<SinopeSwitchState>({
       url: this.config.url + '/device/' + id + '/attribute',
       method: 'PUT',
       data: data,
     });
+    this.myq.end(me);
+    return reqresult;
   }
 
   async updateDimmer(id: number, data: SinopeDimmerStateRequest) {
-    return this.restClient.request<SinopeDimmerState>({
+    const me = Symbol();
+    await this.myq.wait(me, myPriority);
+    const reqresult = this.restClient.request<SinopeDimmerState>({
       url: this.config.url + '/device/' + id + '/attribute',
       method: 'PUT',
       data: data,
     });
+    this.myq.end(me);
+    return reqresult;
   }
 }
