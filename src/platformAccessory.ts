@@ -79,7 +79,7 @@ export class SinopeThermostatAccessory {
     this.updateState();
 
     setInterval(() => {
-       this.updateState();
+      this.updateState();
     }, 360 * 1000);
   }
 
@@ -299,7 +299,7 @@ export class SinopeSwitchAccessory {
     this.updateState();
 
     setInterval(() => {
-       this.updateState();
+      this.updateState();
     }, 360 * 1000);
   }
 
@@ -422,7 +422,7 @@ export class SinopeDimmerAccessory {
     this.updateState();
 
     setInterval(() => {
-       this.updateState();
+      this.updateState();
     }, 360 * 1000);
   }
 
@@ -484,7 +484,7 @@ export class SinopeDimmerAccessory {
     const body: SinopeDimmerStateRequest = {intensity: Number(value)};
     try {
       await this.platform.neviweb.updateDimmer(this.device.id, body);
-      //try twice !
+      //try twice, there is a bug in the Sinope API where brightness is not always set
       await this.platform.neviweb.updateDimmer(this.device.id, body);
       this.platform.log.debug('updated device %s with Brightness %d', this.device.name, value);
     } catch(error) {

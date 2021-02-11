@@ -68,7 +68,7 @@ export class NeviwebApi {
   async updateSwitch(id: number, data: SinopeSwitchStateRequest) {
     const me = Symbol();
     await this.myq.wait(me, myPriority);
-    const reqresult =  this.restClient.request<SinopeSwitchState>({
+    const reqresult = this.restClient.request<SinopeSwitchState>({
       url: this.config.url + '/device/' + id + '/attribute',
       method: 'PUT',
       data: data,
